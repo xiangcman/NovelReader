@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -43,6 +44,8 @@ public class PageView extends View {
     private boolean isPrepare;
     // 动画类
     private PageAnimation mPageAnim;
+
+    public boolean animateFinish = true;
     // 动画监听类
     private PageAnimation.OnPageChangeListener mPageAnimListener = new PageAnimation.OnPageChangeListener() {
         @Override
@@ -201,7 +204,10 @@ public class PageView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
-
+        Log.d(TAG, "animateFinish:" + animateFinish);
+        if (!animateFinish) {
+            return false;
+        }
         if (!canTouch && event.getAction() != MotionEvent.ACTION_DOWN) return true;
 
         int x = (int) event.getX();
@@ -317,7 +323,7 @@ public class PageView extends View {
     public void drawCurPage(boolean isUpdate) {
         if (!isPrepare) return;
 
-        if (!isUpdate){
+        if (!isUpdate) {
             if (mPageAnim instanceof ScrollPageAnim) {
                 ((ScrollPageAnim) mPageAnim).resetBitmap();
             }

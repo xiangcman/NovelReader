@@ -3,9 +3,12 @@ package com.example.newbiechen.ireader.widget.animation;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
+
+import com.example.newbiechen.ireader.widget.page.PageView;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -334,7 +337,6 @@ public class ScrollPageAnim extends PageAnimation {
         return true;
     }
 
-
     BitmapView tmpView;
 
     @Override
@@ -375,6 +377,12 @@ public class ScrollPageAnim extends PageAnimation {
             setTouchPoint(x, y);
             if (mScroller.getFinalX() == x && mScroller.getFinalY() == y) {
                 isRunning = false;
+                Log.d(TAG, "not running");
+                ((PageView) mView).animateFinish = true;
+
+            } else {
+                Log.d(TAG, "running");
+                ((PageView) mView).animateFinish = false;
             }
             mView.postInvalidate();
         }

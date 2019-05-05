@@ -10,6 +10,7 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 import android.text.TextPaint;
+import android.util.Log;
 
 import com.example.newbiechen.ireader.model.bean.BookRecordBean;
 import com.example.newbiechen.ireader.model.bean.CollBookBean;
@@ -24,7 +25,6 @@ import com.example.newbiechen.ireader.utils.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +32,8 @@ import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
 import io.reactivex.SingleObserver;
 import io.reactivex.SingleOnSubscribe;
+import io.reactivex.SingleSource;
+import io.reactivex.SingleTransformer;
 import io.reactivex.disposables.Disposable;
 
 /**
@@ -199,6 +201,8 @@ public abstract class PageLoader {
 
         // 绘制页面内容的画笔
         mTextPaint = new TextPaint();
+        String familyName = "宋体";
+        mTextPaint.setTypeface(Typeface.createFromAsset(mContext.getAssets(), "song.ttf"));
         mTextPaint.setColor(mTextColor);
         mTextPaint.setTextSize(mTextSize);
         mTextPaint.setAntiAlias(true);
@@ -252,11 +256,12 @@ public abstract class PageLoader {
     }
 
     /**
-     * 跳转到下一章
+     * 跳转到下一章，这里会预先加载下下两个章节
      *
      * @return
      */
     public boolean skipNextChapter() {
+        Log.d(TAG, "skipNextChapter-->跳到下一章节");
         if (!hasNextChapter()) {
             return false;
         }
@@ -322,6 +327,7 @@ public abstract class PageLoader {
      * @return
      */
     public boolean skipToNextPage() {
+
         return mPageView.autoNextPage();
     }
 
@@ -667,6 +673,7 @@ public abstract class PageLoader {
     }
 
     public boolean isChapterOpen() {
+        Log.d(TAG, "isChapterOpen-->章节是否打开过:" + isChapterOpen);
         return isChapterOpen;
     }
 
@@ -681,7 +688,10 @@ public abstract class PageLoader {
         TxtChapter chapter = mChapterList.get(chapterPos);
         // 判断章节是否存在
         if (!hasChapterData(chapter)) {
+            Log.d(TAG, "loadPageList-->没有本地缓存数据");
             return null;
+        } else {
+            Log.d(TAG, "loadPageList-->有本地缓存数据");
         }
         // 获取章节的文本流
         BufferedReader reader = getChapterReader(chapter);
@@ -1036,6 +1046,7 @@ public abstract class PageLoader {
         } else {
             mCurPage = new TxtPage();
         }
+        //如果出错了直接在这里重新绘制错误的信息
         mPageView.drawNextPage();
         return true;
     }
@@ -1043,8 +1054,10 @@ public abstract class PageLoader {
     private boolean hasNextChapter() {
         // 判断是否到达目录最后一章
         if (mCurChapterPos + 1 >= mChapterList.size()) {
+            Log.d(TAG, "hasNextChapter:" + false);
             return false;
         }
+        Log.d(TAG, "hasNextChapter:" + true);
         return true;
     }
 
@@ -1086,6 +1099,7 @@ public abstract class PageLoader {
     }
 
     private void dealLoadPageList(int chapterPos) {
+        Log.d(TAG, "加载当前页的数据-->dealLoadPageList:" + chapterPos);
         try {
             mCurPageList = loadPageList(chapterPos);
             if (mCurPageList != null) {
@@ -1123,7 +1137,7 @@ public abstract class PageLoader {
     // 预加载下一章
     private void preLoadNextChapter() {
         int nextChapter = mCurChapterPos + 1;
-
+        Log.d(TAG, "预加载下一章-->preLoadNextChapter:" + nextChapter);
         // 如果不存在下一章，且下一章没有数据，则不进行加载。
         if (!hasNextChapter()
                 || !hasChapterData(mChapterList.get(nextChapter))) {
@@ -1139,25 +1153,30 @@ public abstract class PageLoader {
         Single.create(new SingleOnSubscribe<List<TxtPage>>() {
             @Override
             public void subscribe(SingleEmitter<List<TxtPage>> e) throws Exception {
-                e.onSuccess(loadPageList(nextChapter));
+                List<TxtPage> txtPages = loadPageList(nextChapter);
+                e.onSuccess(txtPages);
             }
-        }).compose(RxUtils::toSimpleSingle)
-                .subscribe(new SingleObserver<List<TxtPage>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        mPreLoadDisp = d;
-                    }
+        }).compose(new SingleTransformer<List<TxtPage>, List<TxtPage>>() {
+            @Override
+            public SingleSource<List<TxtPage>> apply(Single<List<TxtPage>> upstream) {
+                return RxUtils.toSimpleSingle(upstream);
+            }
+        }).subscribe(new SingleObserver<List<TxtPage>>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                mPreLoadDisp = d;
+            }
 
-                    @Override
-                    public void onSuccess(List<TxtPage> pages) {
-                        mNextPageList = pages;
-                    }
+            @Override
+            public void onSuccess(List<TxtPage> pages) {
+                mNextPageList = pages;
+            }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        //无视错误
-                    }
-                });
+            @Override
+            public void onError(Throwable e) {
+                //无视错误
+            }
+        });
     }
 
     // 取消翻页
@@ -1335,7 +1354,6 @@ public abstract class PageLoader {
         }
         return pages;
     }
-
 
     /**
      * @return:获取初始显示的页面

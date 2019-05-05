@@ -5,6 +5,7 @@ import android.util.Log;
 import com.example.newbiechen.ireader.utils.Constant;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -23,7 +24,9 @@ public class RemoteHelper {
     private static RemoteHelper sInstance;
     private Retrofit mRetrofit;
     private OkHttpClient mOkHttpClient;
-    private RemoteHelper(){
+    private static final Charset UTF8 = Charset.forName("GBK");
+
+    private RemoteHelper() {
         mOkHttpClient = new OkHttpClient.Builder()
                 .addNetworkInterceptor(
                         new Interceptor() {
@@ -33,7 +36,7 @@ public class RemoteHelper {
 
                                 //在这里获取到request后就可以做任何事情了
                                 Response response = chain.proceed(request);
-                                Log.d(TAG, "intercept: "+request.url().toString());
+                                Log.d(TAG, "intercept: " + request.url().toString());
                                 return response;
                             }
                         }
@@ -47,10 +50,10 @@ public class RemoteHelper {
                 .build();
     }
 
-    public static RemoteHelper getInstance(){
-        if (sInstance == null){
-            synchronized (RemoteHelper.class){
-                if (sInstance == null){
+    public static RemoteHelper getInstance() {
+        if (sInstance == null) {
+            synchronized (RemoteHelper.class) {
+                if (sInstance == null) {
                     sInstance = new RemoteHelper();
                 }
             }
@@ -58,11 +61,11 @@ public class RemoteHelper {
         return sInstance;
     }
 
-    public Retrofit getRetrofit(){
+    public Retrofit getRetrofit() {
         return mRetrofit;
     }
 
-    public OkHttpClient getOkHttpClient(){
+    public OkHttpClient getOkHttpClient() {
         return mOkHttpClient;
     }
 }

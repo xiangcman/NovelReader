@@ -84,7 +84,6 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
     private static final int WHAT_CATEGORY = 1;
     private static final int WHAT_CHAPTER = 2;
 
-
     @BindView(R.id.read_dl_slide)
     DrawerLayout mDlSlide;
     /*************top_menu_view*******************/
@@ -224,6 +223,7 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
         isFullScreen = ReadSettingManager.getInstance().isFullScreen();
 
         mBookId = mCollBook.get_id();
+        Log.d(TAG, "mCollBook:" + mCollBook.toString());
     }
 
     @Override
@@ -251,6 +251,21 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
         mDlSlide.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         //侧边打开后，返回键能够起作用
         mDlSlide.setFocusableInTouchMode(false);
+        mDlSlide.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+//                super.onDrawerOpened(drawerView);
+                Log.d(TAG, "open");
+                mDlSlide.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+//                super.onDrawerClosed(drawerView);
+                Log.d(TAG, "close");
+                mDlSlide.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            }
+        });
         mSettingDialog = new ReadSettingDialog(this, mPageLoader);
 
         setUpAdapter();
@@ -400,8 +415,7 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
                         if (mPageLoader.getPageStatus() == PageLoader.STATUS_LOADING
                                 || mPageLoader.getPageStatus() == PageLoader.STATUS_ERROR) {
                             mSbChapterProgress.setEnabled(false);
-                        }
-                        else {
+                        } else {
                             mSbChapterProgress.setEnabled(true);
                         }
                     }
@@ -484,6 +498,7 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
                     toggleMenu(true);
                     //打开侧滑动栏
                     mDlSlide.openDrawer(Gravity.START);
+//                    mDlSlide.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
                 }
         );
         mTvSetting.setOnClickListener(
@@ -615,6 +630,7 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
     protected void processLogic() {
         super.processLogic();
         // 如果是已经收藏的，那么就从数据库中获取目录
+        Log.d(TAG, "是否收藏-->isCollected:" + isCollected);
         if (isCollected) {
             Disposable disposable = BookRepository.getInstance()
                     .getBookChaptersInRx(mBookId)
@@ -650,6 +666,11 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
 
     }
 
+    /**
+     * 显示章节的列表方法
+     *
+     * @param bookChapters
+     */
     @Override
     public void showCategory(List<BookChapterBean> bookChapters) {
         mPageLoader.getCollBook().setBookChapters(bookChapters);
@@ -673,6 +694,7 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
 
     @Override
     public void errorChapter() {
+        Log.d(TAG, "errorChapter-->加载章节出现了错误:" + mPageLoader.getPageStatus());
         if (mPageLoader.getPageStatus() == PageLoader.STATUS_LOADING) {
             mPageLoader.chapterError();
         }
@@ -769,6 +791,13 @@ public class ReadActivity extends BaseMVPActivity<ReadContract.Presenter>
         mPageLoader = null;
     }
 
+    /**
+     * 两个音量键的操作
+     *
+     * @param keyCode
+     * @param event
+     * @return
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         boolean isVolumeTurnPage = ReadSettingManager

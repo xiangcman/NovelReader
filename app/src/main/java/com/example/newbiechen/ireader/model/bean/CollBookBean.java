@@ -1,27 +1,21 @@
 package com.example.newbiechen.ireader.model.bean;
 
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import com.example.newbiechen.ireader.App;
-import com.example.newbiechen.ireader.utils.StringUtils;
-import com.google.gson.annotations.SerializedName;
-
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
-import org.greenrobot.greendao.annotation.Generated;
-import org.greenrobot.greendao.annotation.OrderBy;
-import org.greenrobot.greendao.annotation.ToMany;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import org.greenrobot.greendao.DaoException;
-import com.example.newbiechen.ireader.model.gen.DaoSession;
 import com.example.newbiechen.ireader.model.gen.BookChapterBeanDao;
 import com.example.newbiechen.ireader.model.gen.CollBookBeanDao;
+import com.example.newbiechen.ireader.model.gen.DaoSession;
+import com.example.newbiechen.ireader.utils.StringUtils;
+
+import org.greenrobot.greendao.DaoException;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.ToMany;
+
+import java.util.List;
 
 /**
  * Created by newbiechen on 17-5-8.
@@ -375,4 +369,27 @@ public class CollBookBean implements Parcelable{
             return new CollBookBean[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "CollBookBean{" +
+                "_id='" + _id + '\'' +
+                ", title='" + title + '\'' +
+                ", author='" + author + '\'' +
+                ", shortIntro='" + shortIntro + '\'' +
+                ", cover='" + cover + '\'' +
+                ", hasCp=" + hasCp +
+                ", latelyFollower=" + latelyFollower +
+                ", retentionRatio=" + retentionRatio +
+                ", updated='" + updated + '\'' +
+                ", lastRead='" + lastRead + '\'' +
+                ", chaptersCount=" + chaptersCount +
+                ", lastChapter='" + lastChapter + '\'' +
+                ", isUpdate=" + isUpdate +
+                ", isLocal=" + isLocal +
+                ", bookChapterList=" + bookChapterList +
+                ", daoSession=" + daoSession +
+                ", myDao=" + myDao +
+                '}';
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.newbiechen.ireader.widget.page;
 
+import android.util.Log;
 
 import com.example.newbiechen.ireader.model.bean.BookChapterBean;
 import com.example.newbiechen.ireader.model.bean.CollBookBean;
@@ -11,7 +12,6 @@ import com.example.newbiechen.ireader.utils.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.List;
  */
 
 public class NetPageLoader extends PageLoader {
-    private static final String TAG = "PageFactory";
+    private static final String TAG = "NetPageLoader";
 
     public NetPageLoader(PageView pageView, CollBookBean collBook) {
         super(pageView, collBook);
@@ -43,9 +43,10 @@ public class NetPageLoader extends PageLoader {
 
     @Override
     public void refreshChapterList() {
+        Log.d(TAG, "refreshChapterList-->刷新章节信息");
         if (mCollBook.getBookChapters() == null) return;
 
-        // 将 BookChapter 转换成当前可用的 Chapter
+        // 将 BookChapter 转换成当前可用的 Chapter,mCollBook.getBookChapters()是章节的信息
         mChapterList = convertTxtChapter(mCollBook.getBookChapters());
         isChapterListPrepare = true;
 
@@ -191,8 +192,8 @@ public class NetPageLoader extends PageLoader {
         if (end >= mChapterList.size()) {
             end = mChapterList.size() - 1;
         }
-
-
+        Log.d(TAG, "requestChapters加载数据-->start:" + start + ";end:" + end);
+        Log.d(TAG, "mChapterList.size:" + mChapterList.size());
         List<TxtChapter> chapters = new ArrayList<>();
 
         // 过滤，哪些数据已经加载了
@@ -204,6 +205,7 @@ public class NetPageLoader extends PageLoader {
         }
 
         if (!chapters.isEmpty()) {
+            //将要加载的章节进行获取
             mPageChangeListener.requestChapters(chapters);
         }
     }
